@@ -1,0 +1,67 @@
+server:
+  port: 8080
+  error:
+    whitelabel:
+      enabled: false
+    include-stacktrace: always
+    path: /error
+    include-exception: 'true'
+  servlet:
+    context-path: /
+    encoding:
+      charset: 'UTF-8'
+      force-response: 'true'
+
+spring:
+  jackson:
+    time-zone: UTC
+  devtools:
+    restart:
+      enabled: false
+  application:
+    name: CloudFileStorage
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        default_schema: public
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+      ddl-auto: validate
+    show-sql: ${SHOW_SQL}
+  liquibase:
+    enabled: ${LIQUIBASE_ENABLED}
+    drop-first: ${LIQUIBASE_DROP_FIRST}
+    change-log: ${LIQUIBASE_CHANGE_LOG}
+    default-schema: public
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
+minio:
+  url: ${MINIO_URL}
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+  bucket-name: ${MINIO_BUCKET_NAME}
+
+logging:
+  level:
+    org:
+      springframework:
+        security: ${LOGGING_LEVEL_SEC}
+    root: ${LOGGING_LEVEL_ROOT}
+    ru.jordan.food_storage: ${LOGGING_LEVEL_FOOD_STORAGE}
+  swagger-ui:
+    docExpansion: none
+

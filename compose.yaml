@@ -1,0 +1,49 @@
+services:
+#  postgres:
+#    image: 'postgres:latest'
+#    environment:
+#      - 'POSTGRES_DB=mydatabase'
+#      - 'POSTGRES_PASSWORD=secret'
+#      - 'POSTGRES_USER=myuser'
+#    ports:
+#      - '5432'
+  redis:
+    image: redis:latest
+    container_name: redis_session_spring
+    ports:
+      - "6379:6379"
+    command: [ "redis-server", "--requirepass", "myredispassword" ]  # Установка пароля для Redis
+    volumes:
+      - redis-data:/data
+    networks:
+      - redis-network
+  redisinsight:
+    image: redislabs/redisinsight:1.14.0
+    container_name: redis_in_sight
+    ports:
+      - "8001:8001"
+    networks:
+      - redis-network
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=myredispassword  # Пароль для подключения к Redis
+  minio:
+    image: minio/minio:latest
+    container_name: minio_storage
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: "minioadmin" # Замените на ваше имя пользователя
+      MINIO_ROOT_PASSWORD: "minioadmin" # Замените на ваш пароль
+    volumes:
+      - minio_data:/data
+    command: server --console-address ":9001" /data
+
+networks:
+  redis-network:
+
+volumes:
+  redis-data:
+  minio_data:
