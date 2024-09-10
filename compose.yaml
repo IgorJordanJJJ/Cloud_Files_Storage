@@ -12,7 +12,7 @@ services:
     container_name: redis_session_spring
     ports:
       - "6379:6379"
-    command: [ "redis-server", "--requirepass", "myredispassword" ]  # Установка пароля для Redis
+#    command: [ "redis-server", "--requirepass", "myredispassword" ]  # Установка пароля для Redis
     volumes:
       - redis-data:/data
     networks:

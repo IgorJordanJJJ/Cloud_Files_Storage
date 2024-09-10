@@ -39,7 +39,7 @@ public class WebSecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
-                .requestMatchers("/css/**").permitAll()
+                .requestMatchers("/css/**", "/auth/registration").permitAll()
                 .anyRequest().authenticated());
         http.headers(Customizer.withDefaults());
         http.sessionManagement(Customizer.withDefaults());
@@ -53,6 +53,7 @@ public class WebSecurityConfiguration {
                 .defaultSuccessUrl("/hello", true)
                 .failureUrl("/auth/login?error")
                 .permitAll());
+        http.logout(logout -> logout.logoutUrl("/logout"));
         return http.build();
     }
 }

@@ -9,9 +9,11 @@ import java.util.Set;
 
 @Getter
 @Setter
+@Builder
 @ToString
-@RequiredArgsConstructor
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,3 +46,4 @@ public class Role {
         return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }
+

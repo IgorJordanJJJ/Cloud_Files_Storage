@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<div class="register-container">
+    <h2>Регистрация</h2>
+    <form method="POST" action="/auth/registration" th:object="${user}">
+        <input type="text" name="username" placeholder="Username" th:value="${user.username}" required>
+        <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+
+        <input type="email" name="email" placeholder="Email" th:value="${user.email}" required>
+        <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+
+        <input type="password" name="password" placeholder="Password" th:value="${user.password}" required>
+        <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+
+        <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
+        <div th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+
+        <button type="submit">Register</button>
+    </form>
+    <div class="error">
+        <!-- Сообщение об ошибке будет отображаться здесь -->
+        <p th:if="${param.error}" th:text="'Passwords do not match'"></p>
+    </div>
+</div>
+
+</body>
+</html>

@@ -23,19 +23,21 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public void run(String... args) throws Exception {
-// Проверяем, есть ли уже админ
+    public void run(String... args) {
+        // Проверяем, есть ли уже админ
         if (userRepository.findByUsername("admin").isEmpty()) {
-            // Создаем нового админа
-            User admin = new User();
-            admin.setUsername("admin");
-            admin.setEmail("admin@example.com");
-            admin.setPassword(passwordEncoder.encode("admin123")); // Шифруем пароль
-            admin.setEnabled(true);
 
             Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            admin.setRoles(Set.of(adminRole));
+
+            // Создаем нового админа
+            User admin = User.builder()
+                    .username("admin")
+                    .email("admin@example.com")
+                    .password(passwordEncoder.encode("admin123"))
+                    .roles(Set.of(adminRole))
+                    .enabled(true)
+                    .build();
 
             userRepository.save(admin);
         }
