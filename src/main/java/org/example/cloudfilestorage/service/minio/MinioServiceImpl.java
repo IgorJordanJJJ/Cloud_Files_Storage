@@ -3,22 +3,30 @@ package org.example.cloudfilestorage.service.minio;
 
 import io.minio.*;
 import io.minio.errors.ErrorResponseException;
+import io.minio.errors.MinioException;
 import io.minio.http.Method;
 import io.minio.messages.Item;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.cloudfilestorage.dto.FileDto;
+import org.example.cloudfilestorage.model.foledr.EFolder;
+import org.example.cloudfilestorage.model.foledr.Folder;
+import org.example.cloudfilestorage.model.user.User;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MinioServiceImpl implements FileService {
     private final MinioClient minioClient;
 
@@ -31,6 +39,7 @@ public class MinioServiceImpl implements FileService {
             boolean isBucketExists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
             if (!isBucketExists) {
                 minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+                log.info("Бакет {} успешно создан", bucketName);
             }
         } catch (Exception e) {
             throw new RuntimeException("Error while checking/creating bucket in Minio", e);
@@ -50,8 +59,6 @@ public class MinioServiceImpl implements FileService {
                             .build());
 
             return FileDto.builder()
-                    .title(fileDto.getTitle())
-                    .description(fileDto.getDescription())
                     .size(fileDto.getFile().getSize())
                     .url(getPreSignedUrlApp(fileDto.getFile().getOriginalFilename()))
                     .filename(fileDto.getFile().getOriginalFilename())
@@ -134,5 +141,27 @@ public class MinioServiceImpl implements FileService {
     private String getPreSignedUrlApp(String filename) {
         String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
         return baseUrl.concat("/minio/download/").concat(filename);
+    }
+
+    public void createRootFolder(@NotNull Folder folder) {
+
+        try {
+            minioClient.putObject(
+                    PutObjectArgs.builder().bucket(bucketName).object(folder.getName()+"/").stream(
+                                    InputStream.nullInputStream(), 0, -1)
+                            .contentType("application/octet-stream")
+                            .build());
+            log.info("Папка {} успешно создана в бакете {}", folder.getName(), bucketName);
+
+        } catch (MinioException e) {
+            log.error("Ошибка при работе с MinIO: {}", e.getMessage(), e);
+            throw new RuntimeException("Не удалось создать папку в MinIO", e);
+        } catch (IOException e) {
+            log.error("Ошибка ввода/вывода при создании папки: {}", e.getMessage(), e);
+            throw new RuntimeException("Ошибка ввода/вывода при создании папки", e);
+        } catch (Exception e) {
+            log.error("Неизвестная ошибка при создании папки: {}", e.getMessage(), e);
+            throw new RuntimeException("Неизвестная ошибка при создании папки в MinIO", e);
+        }
     }
 }

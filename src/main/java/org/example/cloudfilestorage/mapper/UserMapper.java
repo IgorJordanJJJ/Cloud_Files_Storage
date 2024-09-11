@@ -13,7 +13,7 @@ public interface  UserMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "enabled", constant = "true")
-    @Mapping(target = "password", expression = "java( passwordEncoder.encode(userRegistration.getPassword()) )")
+    @Mapping(target = "password", expression = "java( passwordEncoder.encode(userRegistrationDto.getPassword()) )")
     @Mapping(target = "roles", expression = "java( java.util.Set.of(role) )")
     User toUser(UserRegistrationDto userRegistrationDto, PasswordEncoder passwordEncoder, Role role);
 

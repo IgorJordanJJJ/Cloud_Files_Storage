@@ -19,11 +19,11 @@ public class UserService {
     private final UserMapper userMapper;
 
 
-    public void createDefaultUser(UserRegistrationDto userRegistrationDto, Role defaultRole) {
+    public User createDefaultUser(UserRegistrationDto userRegistrationDto, Role defaultRole) {
         // Маппим UserRegistration в User с ролью
         User user = userMapper.toUser(userRegistrationDto, passwordEncoder, defaultRole);
 
         // Сохраняем пользователя в базе данных
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 }

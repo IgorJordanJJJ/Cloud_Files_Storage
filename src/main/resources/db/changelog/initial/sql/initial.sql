@@ -50,6 +50,8 @@ CREATE TABLE folder (
                         parent_folder_id INTEGER,
                         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        folder_type VARCHAR(50) NOT NULL,
+                        download_url_app VARCHAR(50) NOT NULL,
                         FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE,
                         FOREIGN KEY (parent_folder_id) REFERENCES folder(id) ON DELETE CASCADE
 );
@@ -59,8 +61,10 @@ COMMENT ON COLUMN folder.id IS 'Уникальный идентификатор 
 COMMENT ON COLUMN folder.user_id IS 'Идентификатор пользователя, владельца папки';
 COMMENT ON COLUMN folder.name IS 'Название папки';
 COMMENT ON COLUMN folder.parent_folder_id IS 'Идентификатор родительской папки (NULL для корневой папки)';
+COMMENT ON COLUMN folder.folder_type IS 'Идентификатор родительской папки (NULL для корневой папки)';
 COMMENT ON COLUMN folder.created_at IS 'Время создания папки';
 COMMENT ON COLUMN folder.updated_at IS 'Время последнего обновления папки';
+COMMENT ON COLUMN folder.download_url_app IS 'Ссылка для скачивания';
 
 
 CREATE TABLE file (

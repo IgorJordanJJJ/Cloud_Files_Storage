@@ -3,7 +3,7 @@ package org.example.cloudfilestorage.model.user;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.cloudfilestorage.model.File;
-import org.example.cloudfilestorage.model.Folder;
+import org.example.cloudfilestorage.model.foledr.Folder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.proxy.HibernateProxy;

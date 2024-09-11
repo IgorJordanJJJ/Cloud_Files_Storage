@@ -1,6 +1,6 @@
 package org.example.cloudfilestorage.repository;
 
-import org.example.cloudfilestorage.model.Folder;
+import org.example.cloudfilestorage.model.foledr.Folder;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

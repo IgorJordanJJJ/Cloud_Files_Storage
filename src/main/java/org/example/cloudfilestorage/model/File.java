@@ -2,6 +2,7 @@ package org.example.cloudfilestorage.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.cloudfilestorage.model.foledr.Folder;
 import org.example.cloudfilestorage.model.user.User;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;

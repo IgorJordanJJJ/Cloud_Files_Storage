@@ -25,33 +25,30 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class FileDto implements Serializable {
-
     @Serial
     private static final long serialVersionUID = 232836038145089522L;
 
-    @NotBlank(message = "Заголовок файла обязателен")
-    @Size(min = 1, max = 100, message = "Заголовок файла не должен превышать 100 символов")
-    private String title;
+    // Путь, где расположен файл (опционально)
+    @Size(max = 500, message = "Путь к файлу не может превышать 500 символов.")
+    private String filePath;
 
-    @Size(max = 500, message = "Описание файла не должно превышать 500 символов")
-    private String description;
-
-    @Size(max = 500, message = "Путь расположение файла")
-    private String filepath;
-
-    @SuppressWarnings("java:S1948")
-    @NotNull(message = "Файл обязателен")
+    // Сам файл, обязательный только для операций загрузки
+    @NotNull(message = "Файл обязателен для загрузки.")
     private MultipartFile file;
 
-    // TO DO
-    @Size(max = 2048, message = "URL файла не должен превышать 2048 символов")
+    // URL для доступа к файлу, используется для скачивания или получения метаданных
+    @Size(max = 2048, message = "URL файла не может превышать 2048 символов.")
     private String url;
 
+    // Размер файла в байтах
     private Long size;
 
-    @Size(max = 255, message = "Имя файла не должно превышать 255 символов")
+    // Имя файла с валидацией длины
+    @NotBlank(message = "Имя файла не может быть пустым.")
+    @Size(max = 255, message = "Имя файла не может превышать 255 символов.")
     private String filename;
 
+    // Временные метки для отслеживания создания и обновления файла
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
