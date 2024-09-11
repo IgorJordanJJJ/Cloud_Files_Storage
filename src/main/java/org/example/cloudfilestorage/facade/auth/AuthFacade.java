@@ -1,7 +1,7 @@
 package org.example.cloudfilestorage.facade.auth;
 
 import lombok.RequiredArgsConstructor;
-import org.example.cloudfilestorage.dto.UserRegistration;
+import org.example.cloudfilestorage.dto.UserRegistrationDto;
 import org.example.cloudfilestorage.model.user.Role;
 import org.example.cloudfilestorage.service.RoleService;
 import org.example.cloudfilestorage.service.UserService;
@@ -18,7 +18,8 @@ public class AuthFacade {
     private final RoleService roleService;
 
 
-    public String registerUser(UserRegistration user, BindingResult bindingResult){
+    // Need finish add create folder for user
+    public String registerUser(UserRegistrationDto user, BindingResult bindingResult){
         userValidator.validate(user, bindingResult);
 
         if (bindingResult.hasErrors()) {

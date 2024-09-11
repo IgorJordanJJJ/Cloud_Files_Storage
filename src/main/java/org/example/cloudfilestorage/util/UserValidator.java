@@ -2,7 +2,7 @@ package org.example.cloudfilestorage.util;
 
 
 import lombok.RequiredArgsConstructor;
-import org.example.cloudfilestorage.dto.UserRegistration;
+import org.example.cloudfilestorage.dto.UserRegistrationDto;
 import org.example.cloudfilestorage.service.ValidationUserService;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
@@ -15,13 +15,13 @@ public class UserValidator implements Validator {
     private final ValidationUserService registrationUserService;
     @Override
     public boolean supports(Class<?> clazz) {
-        return UserRegistration.class.equals(clazz);
+        return UserRegistrationDto.class.equals(clazz);
     }
 
     @Override
     public void validate(Object target, Errors errors) {
 
-        UserRegistration user = (UserRegistration) target;
+        UserRegistrationDto user = (UserRegistrationDto) target;
 
         // Проверка совпадения пароля и подтверждения пароля
         if (!user.getPassword().equals(user.getConfirmPassword())) {

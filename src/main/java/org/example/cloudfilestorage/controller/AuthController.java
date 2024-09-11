@@ -3,7 +3,7 @@ package org.example.cloudfilestorage.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.cloudfilestorage.dto.UserRegistration;
+import org.example.cloudfilestorage.dto.UserRegistrationDto;
 import org.example.cloudfilestorage.facade.auth.AuthFacade;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -25,12 +25,12 @@ public class AuthController {
     }
 
     @GetMapping("/registration")
-    public String registrationPage(@ModelAttribute("user") UserRegistration user){
+    public String registrationPage(@ModelAttribute("user") UserRegistrationDto user){
         return "auth/registration";
     }
 
     @PostMapping("/registration")
-    public String processRegister(@ModelAttribute("user") @Valid UserRegistration user,
+    public String processRegister(@ModelAttribute("user") @Valid UserRegistrationDto user,
                                   BindingResult bindingResult) {
         log.info("Start process registration");
         return authFacade.registerUser(user, bindingResult);

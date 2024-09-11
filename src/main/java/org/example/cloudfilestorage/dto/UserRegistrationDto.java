@@ -11,7 +11,7 @@ import lombok.*;
 @Setter
 @ToString
 @RequiredArgsConstructor
-public class UserRegistration {
+public class UserRegistrationDto {
     @NotBlank(message = "Имя пользователя не может быть пустым")
     private String username;
 
