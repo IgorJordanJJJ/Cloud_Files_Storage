@@ -76,6 +76,13 @@ public class FileManagerFacade {
     }
 
     public void deleteFile(Long fileId, Authentication authentication) {
+        if (isAuthenticated(authentication))
+        {
+            // TO-DO
+        }
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        User user = userService.findByUsername(userDetails.getUsername());
+        File file = fileService.checkAndDeletedFile(fileId, user);
 
 
     }

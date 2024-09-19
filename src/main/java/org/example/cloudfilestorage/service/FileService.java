@@ -38,4 +38,18 @@ public class FileService {
                 .size(requestFile.getSize())
                 .build();
     }
+
+    public File checkAndDeletedFile(Long fileId, User user) {
+        return null;
+    }
+
+
+    public Boolean fileExistsByFileId(Long fileId, User user) {
+        if (fileRepository.findByUserAndId(user.getId(), fileId).orElse(null) != null) {
+            return true;
+        } else
+            return false;
+    }
+
+
 }
