@@ -10,9 +10,8 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.cloudfilestorage.dto.FileDto;
-import org.example.cloudfilestorage.model.foledr.EFolder;
+import org.example.cloudfilestorage.model.File;
 import org.example.cloudfilestorage.model.foledr.Folder;
-import org.example.cloudfilestorage.model.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class MinioServiceImpl implements FileService {
+public class MinioStorageServiceImpl implements FileStorageService {
     private final MinioClient minioClient;
 
     @Value("${minio.bucket-name}")
@@ -47,22 +46,21 @@ public class MinioServiceImpl implements FileService {
     }
 
     @Override
-    public FileDto uploadFile(FileDto fileDto) {
+    public void uploadFile(FileDto fileDto) {
         try {
             MultipartFile file = fileDto.getFile();
             String filename = fileDto.getFilename() != null ? fileDto.getFilename() : file.getOriginalFilename();
+            String filePath = fileDto.getFilePath(); // Получаем путь
+
+            // Конструируем полный путь для объекта в MinIO
+            String objectName = (filePath != null && !filePath.isEmpty()) ? filePath + "/" + filename : filename;
 
             minioClient.putObject(
-                    PutObjectArgs.builder().bucket(bucketName).object(filename).stream(
+                    PutObjectArgs.builder().bucket(bucketName).object(objectName).stream(
                                     file.getInputStream(), file.getSize(), -1)
                             .contentType(file.getContentType())
                             .build());
 
-            return FileDto.builder()
-                    .size(fileDto.getFile().getSize())
-                    .url(getPreSignedUrlApp(fileDto.getFile().getOriginalFilename()))
-                    .filename(fileDto.getFile().getOriginalFilename())
-                    .build();
         } catch (Exception e) {
             throw new RuntimeException("Error while uploading file to Minio", e);
         }
@@ -147,7 +145,7 @@ public class MinioServiceImpl implements FileService {
 
         try {
             minioClient.putObject(
-                    PutObjectArgs.builder().bucket(bucketName).object(folder.getName()+"/").stream(
+                    PutObjectArgs.builder().bucket(bucketName).object(folder.getName() + "/").stream(
                                     InputStream.nullInputStream(), 0, -1)
                             .contentType("application/octet-stream")
                             .build());

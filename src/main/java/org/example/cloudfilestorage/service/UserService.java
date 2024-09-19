@@ -4,6 +4,7 @@ package org.example.cloudfilestorage.service;
 import lombok.RequiredArgsConstructor;
 import org.example.cloudfilestorage.dto.UserRegistrationDto;
 import org.example.cloudfilestorage.mapper.UserMapper;
+import org.example.cloudfilestorage.model.foledr.Folder;
 import org.example.cloudfilestorage.model.user.Role;
 import org.example.cloudfilestorage.model.user.User;
 import org.example.cloudfilestorage.repository.UserRepository;
@@ -25,5 +26,16 @@ public class UserService {
 
         // Сохраняем пользователя в базе данных
         return userRepository.save(user);
+    }
+
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
+    public Folder getRootFolder(User user) {
+        return user.getFolders().stream()
+                .filter(folder -> folder.getParentFolder() == null) // Фильтруем только корневые папки
+                .findFirst() // Берем первую корневую папку
+                .orElse(null); // Если корневых папок нет, возвращаем null
     }
 }

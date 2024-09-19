@@ -9,7 +9,7 @@ import org.example.cloudfilestorage.model.user.User;
 import org.example.cloudfilestorage.service.FolderService;
 import org.example.cloudfilestorage.service.RoleService;
 import org.example.cloudfilestorage.service.UserService;
-import org.example.cloudfilestorage.service.minio.MinioServiceImpl;
+import org.example.cloudfilestorage.service.minio.MinioStorageServiceImpl;
 import org.example.cloudfilestorage.util.UserValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
@@ -21,7 +21,7 @@ public class AuthFacade {
     private final UserValidator userValidator;
     private final UserService userService;
     private final RoleService roleService;
-    private final MinioServiceImpl minioService;
+    private final MinioStorageServiceImpl minioService;
     private final FolderService folderService;
 
     @Transactional

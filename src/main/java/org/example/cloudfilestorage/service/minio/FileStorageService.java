@@ -2,18 +2,18 @@ package org.example.cloudfilestorage.service.minio;
 
 
 import org.example.cloudfilestorage.dto.FileDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.List;
 
-public interface FileService {
+public interface FileStorageService {
     /**
      * Загрузка файла в Minio.
      *
-     * @param fileDto данные файла для загрузки
-     * @return информация о загруженном файле
+     * @param file данные файла для загрузки
      */
-    FileDto uploadFile(FileDto fileDto);
+    void uploadFile(FileDto file);
 
     /**
      * Загрузка файла из Minio по имени файла.
