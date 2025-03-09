@@ -1,14 +1,11 @@
 package org.example.cloudfilestorage.controller;
 
-import org.springframework.core.io.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.cloudfilestorage.facade.FileManagerFacade;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,7 +34,7 @@ public class FileManagerController {
 
     @PostMapping("/upload")
     public String uploadFile(@RequestParam("file") MultipartFile file,
-                             @RequestParam("folderId") Integer folderId,
+                             @RequestParam("folderId") Long folderId,
                              Authentication authentication) {
         fileManagerFacade.uploadFile(file, folderId, authentication);
         return "redirect:/";
@@ -62,17 +59,13 @@ public class FileManagerController {
     @GetMapping("/file/download")
     public ResponseEntity<Resource> downloadFile(@RequestParam("fileId") Long fileId,
                                                  Authentication authentication) {
-        Resource file = fileManagerFacade.downloadFile(fileId, authentication);
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
-                .body(file);
+        return fileManagerFacade.downloadFile(fileId, authentication);
     }
 
     @PostMapping("/upload-folder")
     public String uploadFolder(@RequestParam("files") MultipartFile[] files,
                                @RequestParam("folderPath") String folderPath,
-                               @RequestParam("folderId") Integer folderId,
+                               @RequestParam("folderId") Long folderId,
                                Authentication authentication) {
         fileManagerFacade.uploadFolder(files, folderPath, folderId, authentication);
         return "redirect:/";
@@ -82,29 +75,26 @@ public class FileManagerController {
     // Создание новой папки
     @PostMapping("/folder/create")
     public String createFolder(@RequestParam String folderName,
-                               @RequestParam(required = false) String path,
+                               @RequestParam(required = false) Long parentId,
                                Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        fileManagerFacade.createFolder(folderName, path, userDetails.getUsername());
+        String path = fileManagerFacade.createFolder(folderName, parentId, authentication);
         return "redirect:/?path=" + path;
     }
 
     // Удаление папки
     @PostMapping("/folder/delete")
-    public String deleteFolder(@RequestParam Integer folderId,
-                               @RequestParam(required = false) String path,
+    public String deleteFolder(@RequestParam Long folderId,
                                Authentication authentication) {
-        fileManagerFacade.deleteFolder(folderId);
+        String path = fileManagerFacade.deleteFolder(folderId, authentication);
         return "redirect:/?path=" + path;
     }
 
     // Переименование папки
     @PostMapping("/folder/rename")
-    public String renameFolder(@RequestParam("folderId") Integer folderId,
+    public String renameFolder(@RequestParam("folderId") Long folderId,
                                @RequestParam("newName") String newName,
-                               @RequestParam(required = false) String path,
                                Authentication authentication) {
-        fileManagerFacade.renameFolder(folderId, newName);
+        String path = fileManagerFacade.renameFolder(folderId, newName, authentication);
         return "redirect:/?path=" + path;
     }
 

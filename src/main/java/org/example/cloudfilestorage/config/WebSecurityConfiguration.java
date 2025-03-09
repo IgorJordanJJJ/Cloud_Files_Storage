@@ -43,6 +43,7 @@ public class WebSecurityConfiguration {
                 .requestMatchers("/css/**", "/auth/registration").permitAll()
                 .requestMatchers(HttpMethod.GET, "/").authenticated()
                 .requestMatchers(HttpMethod.POST, "/upload").authenticated()
+                .requestMatchers(HttpMethod.POST, "/folder/create").authenticated()
                 .anyRequest().authenticated());
         http.headers(Customizer.withDefaults());
         http.sessionManagement(Customizer.withDefaults());

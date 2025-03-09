@@ -44,14 +44,14 @@ COMMENT ON COLUMN user_role.role_id IS 'Идентификатор роли из
 
 
 CREATE TABLE folder (
-                        id SERIAL PRIMARY KEY,
+                        id BIGSERIAL PRIMARY KEY,
                         user_id BIGINT NOT NULL,
                         name VARCHAR(255) NOT NULL,
-                        parent_folder_id INTEGER,
+                        folder_path VARCHAR(500) NOT NULL,
+                        parent_folder_id BIGINT,
                         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         folder_type VARCHAR(50) NOT NULL,
-                        download_url_app VARCHAR(50) NOT NULL,
                         FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE,
                         FOREIGN KEY (parent_folder_id) REFERENCES folder(id) ON DELETE CASCADE
 );
@@ -60,17 +60,17 @@ COMMENT ON TABLE folder IS 'Таблица для хранения папки п
 COMMENT ON COLUMN folder.id IS 'Уникальный идентификатор папки';
 COMMENT ON COLUMN folder.user_id IS 'Идентификатор пользователя, владельца папки';
 COMMENT ON COLUMN folder.name IS 'Название папки';
+COMMENT ON COLUMN folder.folder_path IS 'Путь к папке в хранилище S3';
 COMMENT ON COLUMN folder.parent_folder_id IS 'Идентификатор родительской папки (NULL для корневой папки)';
 COMMENT ON COLUMN folder.folder_type IS 'Идентификатор родительской папки (NULL для корневой папки)';
 COMMENT ON COLUMN folder.created_at IS 'Время создания папки';
 COMMENT ON COLUMN folder.updated_at IS 'Время последнего обновления папки';
-COMMENT ON COLUMN folder.download_url_app IS 'Ссылка для скачивания';
 
 
 CREATE TABLE file (
-                      id SERIAL PRIMARY KEY,
+                      id BIGSERIAL PRIMARY KEY,
                       user_id BIGINT NOT NULL,
-                      folder_id INTEGER,
+                      folder_id BIGINT,
                       filename VARCHAR(255) NOT NULL,
                       filepath VARCHAR(500) NOT NULL,
                       size BIGINT NOT NULL,

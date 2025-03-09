@@ -24,7 +24,7 @@ import java.util.Set;
 public class Folder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -34,6 +34,9 @@ public class Folder {
     @Pattern(regexp = "^[a-zA-Z0-9-_ ]+$", message = "Название содержит недопустимые символы")
     @NotNull(message = "Название не может быть пустым")
     private String name;
+
+    @Column(nullable = false, length = 500)
+    private String folderPath;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_folder_id")
@@ -62,12 +65,6 @@ public class Folder {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    // !!! это не ссылка которую генерирует Minio это ссылка на контроллер через который можно скачать файл
-    @Column(length = 500)
-    @NotNull(message = "Ссылка для скачивания не может быть пустой")
-    private String downloadUrlApp;
-
-
     @Override
     public String toString() {
         return "Folder{" +
@@ -79,19 +76,8 @@ public class Folder {
                 ", subFolders=" + subFolders +
                 ", files=" + files +
                 ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", downloadUrlApp='" + downloadUrlApp + '\'' +
+                ", updatedAt=" + updatedAt + '\'' +
                 '}';
-    }
-
-    // Метод для установки URL, если folderType не SYSTEM
-    public void updateDownloadUrlApp() {
-//        if (this.folderType != EFolder.SYSTEM) {
-//            this.downloadUrlApp = "/files/download/folder/" + this.id;
-//        } else {
-//            this.downloadUrlApp = null; // Или оставить пустым, если это ваш предпочтительный вариант
-//        }
-        this.downloadUrlApp = "/files/download/folder/" + this.name;
     }
 
     @Override

@@ -10,10 +10,14 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.cloudfilestorage.dto.FileDto;
+import org.example.cloudfilestorage.dto.OldFileDto;
+import org.example.cloudfilestorage.dto.OldFolderDto;
 import org.example.cloudfilestorage.model.File;
 import org.example.cloudfilestorage.model.foledr.Folder;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -49,7 +53,7 @@ public class MinioStorageServiceImpl implements FileStorageService {
     public void uploadFile(FileDto fileDto) {
         try {
             MultipartFile file = fileDto.getFile();
-            String filename = fileDto.getFilename() != null ? fileDto.getFilename() : file.getOriginalFilename();
+            String filename = fileDto.getFilename();
             String filePath = fileDto.getFilePath(); // Получаем путь
 
             // Конструируем полный путь для объекта в MinIO
@@ -67,20 +71,79 @@ public class MinioStorageServiceImpl implements FileStorageService {
     }
 
     @Override
-    public InputStream downloadFile(String filename) {
+    public Resource downloadFile(File file) {
+
+        String filename = file.getFilename();
+        String filePath = file.getFilepath();
+
+        // Конструируем полный путь для объекта в MinIO
+        String objectName = (filePath != null && !filePath.isEmpty()) ? filePath + "/" + filename : filename;
+
         try {
-            return minioClient.getObject(
-                    GetObjectArgs.builder().bucket(bucketName).object(filename).build());
+            // Get the file from MinIO
+            InputStream fileStream = minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .build()
+            );
+
+            // Wrap the InputStream in a Resource and return it
+            return new InputStreamResource(fileStream);
+        } catch (MinioException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error downloading file from MinIO: " + e.getMessage());
         } catch (Exception e) {
-            throw new RuntimeException("Error while downloading file from Minio", e);
+            e.printStackTrace();
+            throw new RuntimeException("Unexpected error occurred while downloading file.");
         }
     }
 
     @Override
-    public void deleteFile(String filename) {
+    public void deleteFile(File file) {
+        String filename = file.getFilename();
+        String filePath = file.getFilepath();
+
+        // Конструируем полный путь для объекта в MinIO
+        String objectName = (filePath != null && !filePath.isEmpty()) ? filePath + "/" + filename : filename;
+
         try {
             minioClient.removeObject(
-                    RemoveObjectArgs.builder().bucket(bucketName).object(filename).build());
+                    RemoveObjectArgs.builder().bucket(bucketName).object(objectName).build());
+        } catch (Exception e) {
+            throw new RuntimeException("Error while deleting file from Minio", e);
+        }
+    }
+
+    public void renameFile(OldFileDto oldFileDto, String newFilepath) {
+        String oldFilename = oldFileDto.getFilename();
+        String filePath = oldFileDto.getFilePath();
+
+        // Конструируем полный путь для объекта в MinIO
+        String odlObjectName = (filePath != null && !filePath.isEmpty()) ? filePath + "/" + oldFilename : oldFilename;
+        String objectName = (filePath != null && !filePath.isEmpty()) ? filePath + "/" + newFilepath : newFilepath;
+
+        // 1. Скопировать файл с новым именем
+        try {
+            minioClient.copyObject(
+                    CopyObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName) // новое имя (куда копировать)
+                            .source(CopySource.builder()
+                                    .bucket(bucketName)
+                                    .object(odlObjectName) // откуда копировать
+                                    .build())
+                            .build());
+        } catch (Exception e) {
+            throw new RuntimeException("Error while copy file from Minio", e);
+        }
+        // 2. Удалить старый файл
+        try {
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(odlObjectName)
+                            .build());
         } catch (Exception e) {
             throw new RuntimeException("Error while deleting file from Minio", e);
         }
@@ -162,4 +225,94 @@ public class MinioStorageServiceImpl implements FileStorageService {
             throw new RuntimeException("Неизвестная ошибка при создании папки в MinIO", e);
         }
     }
+
+    public void createFolder(Folder folder, String path) {
+        try {
+            minioClient.putObject(
+                    PutObjectArgs.builder().bucket(bucketName).object(path + "/").stream(
+                                    InputStream.nullInputStream(), 0, -1)
+                            .contentType("application/octet-stream")
+                            .build());
+            log.info("Папка {} успешно создана в бакете {}", folder.getName(), bucketName);
+
+        } catch (MinioException e) {
+            log.error("Ошибка при работе с MinIO: {}", e.getMessage(), e);
+            throw new RuntimeException("Не удалось создать папку в MinIO", e);
+        } catch (IOException e) {
+            log.error("Ошибка ввода/вывода при создании папки: {}", e.getMessage(), e);
+            throw new RuntimeException("Ошибка ввода/вывода при создании папки", e);
+        } catch (Exception e) {
+            log.error("Неизвестная ошибка при создании папки: {}", e.getMessage(), e);
+            throw new RuntimeException("Неизвестная ошибка при создании папки в MinIO", e);
+        }
+    }
+
+    public void deleteFolderByPath(String folderPath) {
+        try {
+            // Убираем возможный начальный/конечный слэш в пути
+            if (folderPath.startsWith("/")) {
+                folderPath = folderPath.substring(1);
+            }
+            if (!folderPath.endsWith("/")) {
+                folderPath += "/";
+            }
+
+            // Список объектов в "папке"
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder().bucket(bucketName).prefix(folderPath).recursive(true).build());
+
+            // Удаление каждого объекта
+            for (Result<Item> result : results) {
+                Item item = result.get();
+                minioClient.removeObject(
+                        RemoveObjectArgs.builder().bucket(bucketName).object(item.objectName()).build());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error while deleting folder from Minio", e);
+        }
+    }
+
+    public void renameFolder(OldFolderDto oldFolderDto) {
+        try {
+            String oldFolderPath = oldFolderDto.getOldFolderPath();
+            if (!oldFolderPath.endsWith("/")) {
+                oldFolderPath += "/";
+            }
+
+            String newFolderPath = oldFolderDto.getOldFolderPath();
+            if (!newFolderPath.endsWith("/")) {
+                newFolderPath += "/";
+            }
+
+            log.info("newFolderPath: " + newFolderPath);
+
+            // Список объектов в старой "папке"
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder().bucket(bucketName).prefix(oldFolderPath).recursive(true).build());
+
+            // Копируем каждый объект в новый путь и удаляем из старого
+            for (Result<Item> result : results) {
+                Item item = result.get();
+                String oldObjectName = item.objectName();
+                String newObjectName = newFolderPath + oldObjectName.substring(oldFolderPath.length());
+
+                // Копируем объект
+                minioClient.copyObject(
+                        CopyObjectArgs.builder()
+                                .bucket(bucketName)
+                                .object(newObjectName)
+                                .source(CopySource.builder().bucket(bucketName).object(oldObjectName).build())
+                                .build()
+                );
+
+                // Удаляем объект из старой "папки"
+                minioClient.removeObject(
+                        RemoveObjectArgs.builder().bucket(bucketName).object(oldObjectName).build()
+                );
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error while renaming folder in Minio", e);
+        }
+    }
+
 }

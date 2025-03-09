@@ -1,8 +1,10 @@
 package org.example.cloudfilestorage.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.cloudfilestorage.dto.FileDto;
+import org.example.cloudfilestorage.dto.OldFileDto;
 import org.example.cloudfilestorage.model.File;
 import org.example.cloudfilestorage.model.foledr.Folder;
 import org.example.cloudfilestorage.model.user.User;
@@ -39,17 +41,35 @@ public class FileService {
                 .build();
     }
 
-    public File checkAndDeletedFile(Long fileId, User user) {
-        return null;
+    public void deletedFile(Long fileId) {
+        fileRepository.deleteById(fileId);
     }
 
 
-    public Boolean fileExistsByFileId(Long fileId, User user) {
-        if (fileRepository.findByUserAndId(user.getId(), fileId).orElse(null) != null) {
-            return true;
-        } else
-            return false;
+    public Boolean fileExistsByFileIdAndUserId(Long fileId, Long userId) {
+        return fileRepository.findByUserIdAndId(fileId, userId).orElse(null) != null;
     }
 
+    public File findByIdAndUserId(Long fileId, Long userId) {
+        fileExists(fileId, userId);
+        return fileRepository.findByUserIdAndId(fileId, userId).orElse(null);
+    }
 
+    private void fileExists(Long fileId, Long userId) {
+        if(!fileExistsByFileIdAndUserId(fileId, userId)){
+            throw new EntityNotFoundException("Folder with ID " + fileId + " not found");
+        }
+    }
+
+    public OldFileDto renameFile(Long fileId, String newName, Long userId) {
+        fileExists(fileId, userId);
+        File oldFile = findByIdAndUserId(fileId, userId);
+        String oldFileName = oldFile.getFilename();
+        oldFile.setFilename(newName);
+        fileRepository.save(oldFile);
+        return OldFileDto.builder()
+                .filename(oldFileName)
+                .filePath(oldFile.getFilepath())
+                .build();
+    }
 }

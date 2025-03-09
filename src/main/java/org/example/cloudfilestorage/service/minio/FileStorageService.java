@@ -2,6 +2,8 @@ package org.example.cloudfilestorage.service.minio;
 
 
 import org.example.cloudfilestorage.dto.FileDto;
+import org.example.cloudfilestorage.model.File;
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -18,17 +20,17 @@ public interface FileStorageService {
     /**
      * Загрузка файла из Minio по имени файла.
      *
-     * @param filename имя файла для загрузки
-     * @return InputStream с содержимым файла
+     * @param file файл для загрузки
+     * @return Resource с содержимым файла
      */
-    InputStream downloadFile(String filename);
+    Resource downloadFile(File file);
 
     /**
-     * Удаление файла из Minio по имени файла.
+     * Удаление файла из Minio.
      *
-     * @param filename имя файла для удаления
+     * @param file файл для удаления
      */
-    void deleteFile(String filename);
+    void deleteFile(File file);
 
     /**
      * Проверка существования файла в Minio по имени файла.

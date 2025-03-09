@@ -35,7 +35,7 @@
             <ul>
                 <li><a href="/">Home</a></li>
                 <li th:each="folder : ${breadcrumb}">
-                    <a th:href="@{|/?path=${folder.name}|}" th:text="${folder.name}"></a>
+                    <a th:href="@{|/?path=${folder.folderPath}|}" th:text="${folder.name}"></a>
                 </li>
                 <li th:if="${currentFolder != null}" th:text="${currentFolder.name}" class="current-folder"></li>
             </ul>
@@ -46,7 +46,7 @@
             <h2>Folders</h2>
             <ul>
                 <li th:each="folder : ${subFolders}">
-                    <a th:href="@{|/?path=${folder.name}|}" th:text="${folder.name}"></a>
+                    <a th:href="@{|/?path=${folder.folderPath}|}" th:text="${folder.name}"></a>
                     <button type="button" th:onclick="'showFolderActions(\'' + ${folder.id} + '\')'">Actions</button>
                 </li>
             </ul>
@@ -54,7 +54,7 @@
             <!-- Форма для создания новой папки -->
             <form action="/folder/create" method="post">
                 <input type="text" name="folderName" placeholder="New folder name" required/>
-                <input type="hidden" name="path" th:value="${currentFolder != null ? currentFolder.name : ''}"/>
+                <input type="hidden" name="parentId" th:value="${currentFolder != null ? currentFolder.id : ''}"/>
                 <button type="submit">Create Folder</button>
             </form>
         </section>
@@ -83,8 +83,8 @@
         <section>
             <form action="/upload-folder" method="post" enctype="multipart/form-data">
                 <input type="file" id="folderInput" name="files" webkitdirectory multiple/>
-                <input type="hidden" name="folderPath" id="folderPath"/>
-                <button type="submit" id="uploadFolderButton">Upload Folder</button>
+                <input type="hidden" name="folderPath" id="folderPath" onchange="toggleUploadButtonFolder()"/>
+                <button type="submit" id="uploadFolderButton" disabled>Upload Folder</button>
             </form>
         </section>
 
@@ -138,6 +138,17 @@
                     uploadButton.disabled = false;
                 } else {
                     uploadButton.disabled = true;
+                }
+            }
+
+            function toggleUploadButtonFolder() {
+                const folderPath = document.getElementById('folderPath');
+                const uploadFolderButton = document.getElementById('uploadFolderButton');
+
+                if (folderPath.files.length > 0) {
+                    uploadFolderButton.disabled = false;
+                } else {
+                    uploadFolderButton.disabled = true;
                 }
             }
 
